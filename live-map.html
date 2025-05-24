@@ -1,0 +1,44 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Live Map from Google Sheets</title>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet" />
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+mapboxgl.accessToken = 'pk.eyJ1Ijoib3BlbmFpLXNpbSIsImEiOiJja3F1MnR0NzAwMHRtMnBwaWR6N2MyMnllIn0.cAQwB7IDGo7FVFvY-ybtmA';
+
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/streets-v11',
+  center: [151.2093, -33.8688], // Sydney
+  zoom: 10
+});
+
+fetch("https://script.google.com/macros/s/AKfycbxbhUtsBH3hsvPyi1dAWxSqsGagaEHKnuWsTD1TboY6IHDyupgc1l9qxFVe2mkhXw1A2A/exec")
+  .then(response => response.json())
+  .then(data => {
+    data.forEach(row => {
+      if (!row.Latitude || !row.Longitude) return;
+      const marker = new mapboxgl.Marker()
+        .setLngLat([parseFloat(row.Longitude), parseFloat(row.Latitude)])
+        .setPopup(new mapboxgl.Popup().setHTML(`
+          <strong>${row.Name || 'Property'}</strong><br/>
+          Zoning: ${row.Zoning || 'N/A'}<br/>
+          Owner: ${row.Owner || 'N/A'}
+        `))
+        .addTo(map);
+    });
+  });
+</script>
+</body>
+</html>
